@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 連結 ConsoleApp 的 AirInfo 類別 -->
+    <Compile Include="..\ConsoleApp\AirInfo.cs" Link="Models\AirInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 複製 ConsoleApp 的資料檔到輸出目錄 -->
+    <None Include="..\ConsoleApp\App_Data\**\*" CopyToOutputDirectory="Always" LinkBase="App_Data\" />
+  </ItemGroup>
+
+</Project>
