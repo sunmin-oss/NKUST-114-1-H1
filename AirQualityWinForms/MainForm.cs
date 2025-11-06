@@ -200,7 +200,17 @@ namespace AirQualityWinForms
                     return;
                 }
 
-                // 載入或選擇站點座標 CSV：格式 sitename,lat,lon（含標頭）
+                // 先嘗試自動載入預設座標檔
+                if (_siteCoords.Count == 0)
+                {
+                    var defaultCsv = Path.Combine(AppContext.BaseDirectory, "App_Data", "stations_tw_coords.csv");
+                    if (File.Exists(defaultCsv))
+                    {
+                        LoadSiteCoordsFromCsv(defaultCsv);
+                    }
+                }
+
+                // 若仍未載入，提示使用者選擇 CSV：格式 sitename,lat,lon（含標頭）
                 if (_siteCoords.Count == 0)
                 {
                     using var ofd = new OpenFileDialog
