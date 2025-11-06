@@ -8,6 +8,7 @@ namespace AirQualityWinForms
     {
         private List<AirInfo> _allData = new();
         private List<AirInfo> _filteredData = new();
+        private Dictionary<string, (double lat, double lon)> _siteCoords = new(StringComparer.OrdinalIgnoreCase);
 
         public MainForm()
         {
@@ -187,6 +188,63 @@ namespace AirQualityWinForms
             // 顯示全部資料
             _filteredData = _allData;
             UpdateDataGrid();
+        }
+
+        private void BtnShowMap_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                if (_allData.Count == 0)
+                {
+                    MessageBox.Show("請先載入資料", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                // 載入或選擇站點座標 CSV：格式 sitename,lat,lon（含標頭）
+                if (_siteCoords.Count == 0)
+                {
+                    using var ofd = new OpenFileDialog
+                    {
+                        Title = "選擇站點座標 CSV (欄位: sitename,lat,lon)",
+                        Filter = "CSV 檔案 (*.csv)|*.csv|所有檔案 (*.*)|*.*",
+                        InitialDirectory = Path.Combine(AppContext.BaseDirectory, "App_Data")
+                    };
+                    if (ofd.ShowDialog(this) != DialogResult.OK) return;
+                    LoadSiteCoordsFromCsv(ofd.FileName);
+                }
+
+                // 以目前篩選結果顯示地圖
+                var current = _filteredData.Count > 0 ? _filteredData : _allData;
+                using var map = new MapForm(current, _siteCoords);
+                map.StartPosition = FormStartPosition.CenterParent;
+                map.ShowDialog(this);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"顯示地圖發生錯誤:\n{ex.Message}", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoadSiteCoordsFromCsv(string path)
+        {
+            var lines = File.ReadAllLines(path);
+            _siteCoords.Clear();
+            foreach (var line in lines.Skip(1)) // skip header
+            {
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                var parts = line.Split(',');
+                if (parts.Length < 3) continue;
+                var name = parts[0].Trim();
+                if (double.TryParse(parts[1].Trim(), out var lat) && double.TryParse(parts[2].Trim(), out var lon))
+                {
+                    if (!string.IsNullOrWhiteSpace(name))
+                        _siteCoords[name] = (lat, lon);
+                }
+            }
+            if (_siteCoords.Count == 0)
+            {
+                throw new InvalidOperationException("座標檔案內容無效或為空，請確認格式為 'sitename,lat,lon'");
+            }
         }
 
         private void UpdateDataGrid()

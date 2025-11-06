@@ -30,6 +30,7 @@ namespace AirQualityWinForms
         {
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.btnLoad = new System.Windows.Forms.Button();
+            this.btnShowMap = new System.Windows.Forms.Button();
             this.cmbSite = new System.Windows.Forms.ComboBox();
             this.cmbItem = new System.Windows.Forms.ComboBox();
             this.cmbMonth = new System.Windows.Forms.ComboBox();
@@ -73,6 +74,17 @@ namespace AirQualityWinForms
             this.btnLoad.Text = "載入資料";
             this.btnLoad.UseVisualStyleBackColor = true;
             this.btnLoad.Click += new System.EventHandler(this.BtnLoad_Click);
+            // 
+            // btnShowMap
+            // 
+            this.btnShowMap.Font = new System.Drawing.Font("Microsoft JhengHei UI", 10F);
+            this.btnShowMap.Location = new System.Drawing.Point(145, 10);
+            this.btnShowMap.Name = "btnShowMap";
+            this.btnShowMap.Size = new System.Drawing.Size(120, 35);
+            this.btnShowMap.TabIndex = 15;
+            this.btnShowMap.Text = "顯示地圖";
+            this.btnShowMap.UseVisualStyleBackColor = true;
+            this.btnShowMap.Click += new System.EventHandler(this.BtnShowMap_Click);
             // 
             // cmbSite
             // 
@@ -192,6 +204,7 @@ namespace AirQualityWinForms
             // 
             this.panelTop.BackColor = System.Drawing.SystemColors.Control;
             this.panelTop.Controls.Add(this.btnLoad);
+            this.panelTop.Controls.Add(this.btnShowMap);
             this.panelTop.Controls.Add(this.lblRecordCount);
             this.panelTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelTop.Location = new System.Drawing.Point(0, 0);
@@ -254,5 +267,6 @@ namespace AirQualityWinForms
         private System.Windows.Forms.Label lblRecordCount;
         private System.Windows.Forms.Panel panelTop;
         private System.Windows.Forms.Panel panelFilter;
+        private System.Windows.Forms.Button btnShowMap;
     }
 }

@@ -18,4 +18,8 @@
     <None Include="..\ConsoleApp\App_Data\**\*" CopyToOutputDirectory="Always" LinkBase="App_Data\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3595.46" />
+  </ItemGroup>
+
 </Project>
