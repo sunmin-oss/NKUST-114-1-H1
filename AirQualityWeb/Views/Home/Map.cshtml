@@ -1,0 +1,96 @@
+@model List<(AirQualityWeb.Models.StationCoordinate coord, AirQualityWeb.Models.AirInfo? latestRecord)>
+@{
+    ViewData["Title"] = "地圖視覺化";
+}
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h1 class="display-5">
+                <i class="bi bi-map me-2"></i>空氣品質地圖視覺化
+            </h1>
+            <p class="text-muted">全台空氣品質監測站 PM2.5 即時分布圖</p>
+            <a href="@Url.Action("Index")" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-arrow-left"></i> 返回資料列表
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <div id="map" style="height: 700px; width: 100%;"></div>
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5>圖例說明</h5>
+            <div class="d-flex gap-3 flex-wrap">
+                <div><span class="badge" style="background-color: #28a745;">■</span> 良好 (&lt; 12)</div>
+                <div><span class="badge" style="background-color: #ffc107;">■</span> 普通 (12-20)</div>
+                <div><span class="badge" style="background-color: #ff9800;">■</span> 對敏感族群不健康 (20-30)</div>
+                <div><span class="badge" style="background-color: #dc3545;">■</span> 不健康 (≥ 30)</div>
+                <div><span class="badge" style="background-color: #6c757d;">■</span> 無資料</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // 初始化地圖 (台灣中心點)
+        var map = L.map('map').setView([23.5, 121], 7);
+
+        // OpenStreetMap 圖層
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        // 測站資料
+        var stations = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(m => new {
+            name = m.coord.SiteName,
+            lat = m.coord.Latitude,
+            lon = m.coord.Longitude,
+            value = m.latestRecord?.Concentration,
+            month = m.latestRecord?.MonitorMonth,
+            unit = m.latestRecord?.ItemUnit
+        })));
+
+        // 根據濃度決定顏色
+        function getColor(value) {
+            if (value == null) return '#6c757d'; // 灰色 (無資料)
+            if (value < 12) return '#28a745';    // 綠色 (良好)
+            if (value < 20) return '#ffc107';    // 黃色 (普通)
+            if (value < 30) return '#ff9800';    // 橘色 (對敏感族群不健康)
+            return '#dc3545';                     // 紅色 (不健康)
+        }
+
+        // 添加標記
+        stations.forEach(function(station) {
+            var color = getColor(station.value);
+            var icon = L.divIcon({
+                html: '<div style="background-color: ' + color + '; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white;"></div>',
+                className: '',
+                iconSize: [20, 20]
+            });
+
+            var popupContent = '<div style="min-width: 200px;">' +
+                '<h6 class="mb-2"><strong>' + station.name + '</strong></h6>' +
+                '<table class="table table-sm table-borderless mb-0">' +
+                '<tr><td>測項:</td><td><strong>PM2.5</strong></td></tr>' +
+                '<tr><td>數值:</td><td><strong class="text-' + 
+                (station.value == null ? 'muted">-' : 'primary">' + station.value.toFixed(2)) + 
+                '</strong> ' + (station.unit || '') + '</td></tr>' +
+                '<tr><td>月份:</td><td>' + (station.month || '-') + '</td></tr>' +
+                '</table></div>';
+
+            L.marker([station.lat, station.lon], { icon: icon })
+                .bindPopup(popupContent)
+                .addTo(map);
+        });
+    </script>
+}
